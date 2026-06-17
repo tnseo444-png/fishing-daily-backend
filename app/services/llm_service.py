@@ -9,14 +9,7 @@ class LLMService:
         self.provider = settings.llm_provider
 
     async def chat(self, system_prompt: str, user_message: str) -> str:
-        if self.provider == "polaris":
-            return await self._call_polaris(system_prompt, user_message)
-        elif self.provider == "openai":
-            return await self._call_openai(system_prompt, user_message)
-        elif self.provider == "claude":
-            return await self._call_claude(system_prompt, user_message)
-        else:
-            raise ValueError(f"지원하지 않는 LLM 프로바이더: {self.provider}")
+        return "개발중"
 
     async def _call_polaris(self, system: str, user: str) -> str:
         """Polaris Agent 내부 호출 (OpenAI 호환 API)"""
