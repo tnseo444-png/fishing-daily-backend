@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-sonnet-4-6"
 
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:5173,https://fishing-daily.web.app,https://fishing-daily.firebaseapp.com"
     environment: str = "development"
 
     class Config:
