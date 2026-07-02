@@ -88,21 +88,26 @@ class LLMService:
             return resp.json()["content"][0]["text"]
 
     async def _call_gemini(self, system: str, user: str, api_key: str = None) -> str:
-        """Gemini API 호출"""
+        """Gemini API 호출 (429 시 최대 3회 재시도)"""
+        import asyncio
         key = api_key or os.environ.get("GEMINI_API_KEY", settings.gemini_api_key)
         model = os.environ.get("GEMINI_MODEL", settings.gemini_model)
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-                params={"key": key},
-                json={
-                    "system_instruction": {"parts": [{"text": system}]},
-                    "contents": [{"parts": [{"text": user}]}],
-                    "generationConfig": {"maxOutputTokens": 2000, "temperature": 0.7},
-                },
-                timeout=60.0,
-            )
-            resp.raise_for_status()
-            return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+        for attempt in range(3):
+            async with httpx.AsyncClient() as client:
+                resp = await client.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                    params={"key": key},
+                    json={
+                        "system_instruction": {"parts": [{"text": system}]},
+                        "contents": [{"parts": [{"text": user}]}],
+                        "generationConfig": {"maxOutputTokens": 2000, "temperature": 0.7},
+                    },
+                    timeout=60.0,
+                )
+                if resp.status_code == 429 and attempt < 2:
+                    await asyncio.sleep(5 * (attempt + 1))
+                    continue
+                resp.raise_for_status()
+                return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
 
 llm_service = LLMService()
