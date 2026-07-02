@@ -9,7 +9,14 @@ class LLMService:
         self.provider = settings.llm_provider
 
     async def chat(self, system_prompt: str, user_message: str) -> str:
-        return "개발중"
+        if self.provider == "claude" and settings.anthropic_api_key:
+            return await self._call_claude(system_prompt, user_message)
+        elif self.provider == "openai" and settings.openai_api_key:
+            return await self._call_openai(system_prompt, user_message)
+        elif self.provider == "polaris" and settings.polaris_api_url and settings.polaris_api_key:
+            return await self._call_polaris(system_prompt, user_message)
+        else:
+            return "AI 기능이 설정되지 않았습니다."
 
     async def _call_polaris(self, system: str, user: str) -> str:
         """Polaris Agent 내부 호출 (OpenAI 호환 API)"""
