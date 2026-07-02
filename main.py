@@ -59,4 +59,11 @@ def _seed_initial_data():
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "Fishing Daily"}
+    import os
+    return {
+        "status": "ok",
+        "service": "Fishing Daily",
+        "llm_provider": os.environ.get("LLM_PROVIDER", "NOT SET"),
+        "gemini_key_set": bool(os.environ.get("GEMINI_API_KEY")),
+        "gemini_key_prefix": os.environ.get("GEMINI_API_KEY", "")[:5] or "EMPTY"
+    }
