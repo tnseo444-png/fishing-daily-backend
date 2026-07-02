@@ -9,7 +9,9 @@ class LLMService:
         self.provider = settings.llm_provider
 
     async def chat(self, system_prompt: str, user_message: str) -> str:
-        if self.provider == "claude" and settings.anthropic_api_key:
+        if self.provider == "gemini" and settings.gemini_api_key:
+            return await self._call_gemini(system_prompt, user_message)
+        elif self.provider == "claude" and settings.anthropic_api_key:
             return await self._call_claude(system_prompt, user_message)
         elif self.provider == "openai" and settings.openai_api_key:
             return await self._call_openai(system_prompt, user_message)
@@ -79,5 +81,21 @@ class LLMService:
             )
             resp.raise_for_status()
             return resp.json()["content"][0]["text"]
+
+    async def _call_gemini(self, system: str, user: str) -> str:
+        """Gemini API 호출"""
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{settings.gemini_model}:generateContent",
+                params={"key": settings.gemini_api_key},
+                json={
+                    "system_instruction": {"parts": [{"text": system}]},
+                    "contents": [{"parts": [{"text": user}]}],
+                    "generationConfig": {"maxOutputTokens": 2000, "temperature": 0.7},
+                },
+                timeout=60.0,
+            )
+            resp.raise_for_status()
+            return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
 
 llm_service = LLMService()

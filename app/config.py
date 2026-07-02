@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     kakao_bizmessage_sender_key: str = ""
     kakao_template_id: str = ""
 
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-1.5-flash"
+
     llm_provider: str = "polaris"
     polaris_api_url: str = ""
     polaris_api_key: str = ""
